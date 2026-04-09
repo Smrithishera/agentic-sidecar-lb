@@ -1,0 +1,5 @@
+{
+  "name": "Agentic Sidecar Load Balancer",
+  "description": "A MARL-based load balancer with NLP intent analysis for intelligent request routing and anomaly prevention.",
+  "requestFramePermissions": []
+}

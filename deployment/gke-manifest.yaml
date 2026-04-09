@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agentic-app-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: my-service
+  template:
+    metadata:
+      labels:
+        app: my-service
+    spec:
+      containers:
+      # 1. THE MAIN APPLICATION
+      - name: main-app
+        image: gcr.io/your-project/main-app:latest
+        ports:
+        - containerPort: 8080
+
+      # 2. THE AGENTIC SIDECAR (Our Project)
+      - name: agentic-sidecar
+        image: gcr.io/your-project/agentic-sidecar:latest
+        env:
+        - name: GCP_PROJECT_ID
+          value: "your-project-id"
+        ports:
+        - containerPort: 50051 # gRPC port for inference
+        resources:
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
+
+      # 3. THE PROXY (Envoy)
+      # This intercepts traffic and asks the sidecar for routing decisions
+      - name: envoy-proxy
+        image: envoyproxy/envoy:v1.22.0
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - name: envoy-config
+          mountPath: /etc/envoy
+      volumes:
+      - name: envoy-config
+        configMap:
+          name: envoy-conf

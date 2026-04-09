@@ -1,0 +1,31 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: agentic-load-balancer
+  annotations:
+    run.googleapis.com/launch-stage: BETA
+spec:
+  template:
+    spec:
+      containers:
+      # 1. THE CONTROL PLANE (Dashboard & SRE Reporting)
+      - name: dashboard
+        image: gcr.io/PROJECT_ID/dashboard:latest
+        ports:
+        - containerPort: 3000
+        env:
+        - name: GCP_PROJECT_ID
+          value: "PROJECT_ID"
+        - name: GEMINI_API_KEY
+          value: "YOUR_GEMINI_API_KEY" # Better to use Secret Manager
+
+      # 2. THE AGENTIC SIDECAR (MARL & Chaos GAN)
+      - name: sidecar
+        image: gcr.io/PROJECT_ID/sidecar:latest
+        env:
+        - name: GCP_PROJECT_ID
+          value: "PROJECT_ID"
+        resources:
+          limits:
+            cpu: 1000m
+            memory: 1Gi
